@@ -1,0 +1,41 @@
+---
+- name: verify os type for linux
+  set_fact: os_family=linux
+  when: ansible_os_family != 'Darwin'
+
+- name: verify os type for osx
+  set_fact: os_family=osx
+  when: ansible_os_family == 'Darwin'
+
+# - name: show os_family
+#   debug: msg="{{ os_family }}"
+
+- name: detect os variables
+  include: "{{ os_family }}_vars.yml"
+
+- name: assert home directory is detected
+  assert: { that: user_home.stdout != "" }
+
+- name: assert current shell is detected
+  assert: { that: user_shell.stdout != "" }
+
+- name: clone .emacs.d for {{ user }}
+  git:
+    repo: "{{ repository }}"
+    dest: "{{ user_home.stdout }}/.emacs.d"
+    version: "{{ version }}"
+  become: "{{ user }}"
+  when: origin == 'clone'
+
+# - name: copy .emacs.d for {{ user }}
+#   copy:
+#     src: "{{ lookup('env','HOME') }}/.emacs.d"
+#     dest: "{{ user_home.stdout }}/.emacs.d"
+#     owner: "{{ user_home.stdout }}"
+#   when: origin == 'copy'
+- name: copy .emacs.d for {{ user }}
+  copy:
+    src: "{{ lookup('env','HOME') }}/.emacs.d"
+    dest: "{{ user_home.stdout }}/.emacs.d"
+    owner: "{{ user }}"
+  when: origin == 'copy'

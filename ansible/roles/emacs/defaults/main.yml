@@ -1,0 +1,5 @@
+---
+repository: https://github.com/Dong--Jian/.emacs.d.git
+version: master
+user: "{{ ansible_user_id }}"
+origin: "copy"

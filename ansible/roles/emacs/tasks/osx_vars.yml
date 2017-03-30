@@ -1,0 +1,12 @@
+---
+- name: register home directory for {{ user }}
+  shell: >
+    echo /Users/{{ user }}
+  changed_when: false
+  register: user_home
+
+- name: register current login shell for {{ user }}
+  shell: >
+    dscl . -read /Users/{{ user }} UserShell | sed 's/UserShell: //g'
+  changed_when: false
+  register: user_shell
