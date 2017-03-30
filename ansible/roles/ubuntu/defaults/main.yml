@@ -1,0 +1,11 @@
+---
+packages:
+  - git
+  - git-flow
+  - cmake
+  - python-pip
+  - htop
+  - cppcheck
+
+repositories:
+  - ppa:git-core/ppa

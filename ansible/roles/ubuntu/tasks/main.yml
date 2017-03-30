@@ -1,0 +1,12 @@
+---
+- name: add ubuntu repositories
+  apt_repository:
+    repo: "{{ item }}"
+  become: true
+  with_items: "{{ repositories }}"
+
+- name: install ubuntu packages
+  package:
+    name: "{{ item }}"
+  become: true
+  with_items: "{{ packages }}"
