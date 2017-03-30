@@ -1,0 +1,29 @@
+---
+- name: install tmux
+  package:
+    name: tmux
+  become: true
+  ignore_errors: yes
+
+- name: copy tmux configuration with plugin
+  template:
+    src: tmux.conf.plugin
+    dest: "{{ tmux_dot_file }}"
+  when: "{{ tmux_plugin_on }}"
+
+- name: copy tmux configuration
+  template:
+    src: tmux.conf
+    dest: "{{ tmux_dot_file }}"
+  when: ("{{ tmux_plugin_on }}" == 'no')
+
+- name: set prefix key
+  blockinfile:
+    dest: "{{ tmux_dot_file }}"
+    create: yes
+    block: |
+      # remap prefix from 'C-b' to 'C-M-b'
+      unbind-key C-b
+      set -g prefix 'C-M-b'
+      bind-key 'C-M-b' send-prefix
+  when: "{{ tmux_local_version }}"

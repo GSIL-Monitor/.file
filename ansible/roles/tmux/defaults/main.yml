@@ -1,0 +1,4 @@
+---
+tmux_local_version: no
+tmux_plugin_on: no
+tmux_dot_file: "{{ lookup('env', 'HOME') }}/.tmux.conf"
