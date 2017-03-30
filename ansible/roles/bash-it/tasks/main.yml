@@ -1,0 +1,121 @@
+---
+- name: verify os type for linux
+  set_fact: os_family=linux
+  when: ansible_os_family != 'Darwin'
+
+- name: verify os type for osx
+  set_fact: os_family=osx
+  when: ansible_os_family == 'Darwin'
+
+# - name: show os_family
+#   debug: msg="{{ os_family }}"
+
+- name: detect os variables
+  include: "{{ os_family }}_vars.yml"
+
+- name: assert home directory is detected
+  assert: { that: user_home.stdout != "" }
+
+- name: assert current shell is detected
+  assert: { that: user_shell.stdout != "" }
+
+- name: clone bash_it for {{ user }}
+  git:
+    repo: "{{ repository }}"
+    dest: "{{ user_home.stdout }}/.bash_it"
+    version: "{{ version }}"
+  become: "{{ user }}"
+
+- name: check whether .bash_profile loads .bashrc
+  command: "grep .bashrc {{ user_home.stdout }}/.bash_profile"
+  register: bash_profile
+  always_run: True
+  ignore_errors: True
+  changed_when: False
+
+- name: .bash_profile loads .bashrc for {{ user }}
+  blockinfile:
+    dest: "{{ user_home.stdout }}/.bash_profile"
+    create: yes
+    owner: "{{ user }}"
+    block: |
+      if [ -f ~/.bashrc ]; then
+        source ~/.bashrc
+      fi
+  when: bash_profile.stdout == ""
+
+- name: change shell to bash for {{ user }}
+  command: "chsh -s /bin/bash {{ user }}"
+  become_user: root
+  when: user_shell.stdout != "/bin/bash"
+
+- name: check whether .bashrc.bak exists for {{ user }}
+  stat: path={{ user_home.stdout }}/.bashrc.bak
+  register: bashrc_bak
+
+- name: install bash_it on .bashrc for {{ user }}
+  command: "{{ user_home.stdout }}/.bash_it/install.sh"
+  when: bashrc_bak.stat.exists == False
+
+- name: config bash_it on .bashrc for {{ user }}
+  lineinfile:
+    dest: "{{ user_home.stdout }}/.bashrc"
+    create: yes
+    owner: "{{ user }}"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  with_items:
+    - { regexp: '^export BASH_IT=', line: 'export BASH_IT="{{ user_home.stdout }}/.bash_it"' }
+    - { regexp: '^export BASH_IT_THEME=', line: 'export BASH_IT_THEME="{{ theme }}"' }
+    - { regexp: '^source \$BASH_IT', line: 'source $BASH_IT/bash_it.sh' }
+
+- name: update_terminal_cwd for Mac OS X for {{ user }}
+  lineinfile:
+    dest: "{{ user_home.stdout }}/.bashrc"
+    create: yes
+    owner: "{{ user }}"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  with_items:
+    - { regexp: 'PROMPT_COMMAND;update_terminal_cwd;', line: '[ "$TERM_PROGRAM" == "Apple_Terminal" ] && [ -z "$INSIDE_EMACS" ] && export PROMPT_COMMAND="$PROMPT_COMMAND;update_terminal_cwd;" || true' }
+  when: ansible_os_family == "Darwin"
+
+- name: initialize bash_it directories for {{ user }}
+  file:
+    path: "{{ user_home.stdout }}/.bash_it/{{ item }}/enabled"
+    state: directory
+    owner: "{{ user }}"
+  with_items:
+    - "plugins"
+    - "aliases"
+    - "completion"
+
+- name: install bash_it plugins for {{ user }}
+  file:
+    src: "{{ user_home.stdout }}/.bash_it/plugins/available/{{ item }}.plugin.bash"
+    dest: "{{ user_home.stdout }}/.bash_it/plugins/enabled/{{ item }}.plugin.bash"
+    state: link
+    owner: "{{ user }}"
+  with_items: '{{ plugins }}'
+
+- name: install bash_it aliases for {{ user }}
+  file:
+    src: "{{ user_home.stdout }}/.bash_it/aliases/available/{{ item }}.aliases.bash"
+    dest: "{{ user_home.stdout }}/.bash_it/aliases/enabled/{{ item }}.aliases.bash"
+    state: link
+    owner: "{{ user }}"
+  with_items: '{{ aliases }}'
+
+- name: install bash_it completions for {{ user }}
+  file:
+    src: "{{ user_home.stdout }}/.bash_it/completion/available/{{ item }}.completion.bash"
+    dest: "{{ user_home.stdout }}/.bash_it/completion/enabled/{{ item }}.completion.bash"
+    state: link
+    owner: "{{ user }}"
+  with_items: '{{ completions }}'
+
+- name: copy bash_it custom configurations
+  template:
+    src: "{{ item }}"
+    dest: "{{ user_home.stdout }}/.bash_it/custom/{{ item }}"
+  with_items: '{{ customs }}'
