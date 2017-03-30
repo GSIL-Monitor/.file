@@ -1,0 +1,30 @@
+---
+- name: install virtualenvwrapper
+  pip: >
+    name=virtualenvwrapper
+    state=present
+  become: true
+  tags:
+    - installation
+
+- name: set project home
+  lineinfile: >
+    dest={{ virtualenvwrapper_init_file }}
+    regexp='export PROJECT_HOME'
+    line='export PROJECT_HOME={{ virtualenvwrapper_venvs_project }}'
+    state=present
+    backup=yes
+    create=yes
+  tags:
+    - configuration
+
+- name: set virtualenvwrapper auto-load script
+  lineinfile: >
+    dest={{ virtualenvwrapper_init_file }}
+    regexp='source `which virtualenvwrapper.sh`'
+    line='source `which virtualenvwrapper.sh`'
+    state=present
+    backup=yes
+    create=yes
+  tags:
+    - configuration

@@ -1,0 +1,4 @@
+---
+virtualenvwrapper_init_file: "{{ lookup('env', 'HOME') }}/.bash_it/custom/virtualenvwrapper.bash"
+virtualenvwrapper_venvs_home: "{{ lookup('env', 'HOME') }}/.virtualenvs"
+virtualenvwrapper_venvs_project: "{{ lookup('env', 'HOME') }}/.virtualenvs-project"
