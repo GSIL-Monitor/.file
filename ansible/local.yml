@@ -1,0 +1,11 @@
+---
+- name: set up the linux enviroment for localhost
+  hosts: localhost
+
+  roles:
+    - ubuntu
+    - ssh
+    - bash-it
+    - { role: tmux, tmux_local_version: yes , tmux_plugin_on: yes}
+    - emacs
+    - virtualenvwrapper

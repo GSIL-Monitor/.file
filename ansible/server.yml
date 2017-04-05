@@ -1,0 +1,8 @@
+---
+- name: set up the linux enviroment for servers
+  hosts: server
+
+  roles:
+    - ssh
+    - bash-it
+    - scikit
