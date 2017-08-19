@@ -1,0 +1,6 @@
+---
+- name: install scikit packages
+  pip:
+    name: "{{ item }}"
+  become: true
+  with_items: "{{ packages }}"
