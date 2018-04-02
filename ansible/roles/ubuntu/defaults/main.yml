@@ -6,6 +6,8 @@ packages:
   - python-pip
   - htop
   - cppcheck
+  - emacs25
 
 repositories:
   - ppa:git-core/ppa
+  - ppa:kelleyk/emacs
