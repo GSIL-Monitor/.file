@@ -1,5 +1,5 @@
 ---
-repository: https://github.com/Bash-it/bash-it.git
+repository: https://github.com/Dong--Jian/bash-it.git
 version: master
 theme: sexy
 aliases:

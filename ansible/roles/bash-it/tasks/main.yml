@@ -7,8 +7,8 @@
   set_fact: os_family=osx
   when: ansible_os_family == 'Darwin'
 
-# - name: show os_family
-#   debug: msg="{{ os_family }}"
+- name: show os_family
+  debug: msg="{{ os_family }}"
 
 - name: detect os variables
   include: "{{ os_family }}_vars.yml"
@@ -65,9 +65,7 @@
     regexp: "{{ item.regexp }}"
     line: "{{ item.line }}"
   with_items:
-    - { regexp: '^export BASH_IT=', line: 'export BASH_IT="{{ user_home.stdout }}/.bash_it"' }
     - { regexp: '^export BASH_IT_THEME=', line: 'export BASH_IT_THEME="{{ theme }}"' }
-    - { regexp: '^source \$BASH_IT', line: 'source $BASH_IT/bash_it.sh' }
 
 - name: update_terminal_cwd for Mac OS X for {{ user }}
   lineinfile:
